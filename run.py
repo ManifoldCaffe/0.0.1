@@ -1,4 +1,3 @@
-# BY: DeepSeek R1
 import matplotlib
 import ccxt
 import pandas as pd
@@ -8,19 +7,29 @@ import matplotlib.dates as mdates
 import logging
 import shutup as shutthefxxkup
 from datetime import datetime
-from config import CONFIG
 from datafetcher import DataFetcher
 from strategy import MeanReversionStrategy
+from datafetcher import DataFetcher
+from backtest import run_backtest
 from logger import Logger
 from visualizer import Visualizer
 
 if __name__ == '__main__':
     logger = Logger(level=logging.DEBUG)
+    datafethcer = DataFetcher()
     engine = MeanReversionStrategy()
     visualizer = Visualizer()
-    engine.fetch_data()
+
+    engine.config()
+    engine.load_data()
     engine.generate_signals()
-    positions, metrics = engine.backtest()
-    for key, value in metrics.items():
-        print(f'{key}: {value}')
-    visualizer.plot(engine.df, positions)
+
+    position_history, metrics = run_backtest(engine.market_data)
+
+    if metrics:
+        for key, value in metrics.items():
+            print(f'{key}: {value}')
+
+    visualizer.link_strategy(engine)
+    # visualizer.load_data(engine.market_data, position_history)
+    visualizer.plot(engine.market_data, position_history)
